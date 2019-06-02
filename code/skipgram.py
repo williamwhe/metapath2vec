@@ -1,22 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-""" 
-Author: Satoshi Tsutsui <stsutsui@indiana.edu>
-I consluted the public implementation of word2vec:https://github.com/chiphuyen/stanford-tensorflow-tutorials/blob/b95dcdf7bd3efa0f6ff3c28e01d3d42d2084b35c/examples/04_word2vec_no_frills.py
-"""
-
-
-
 import os
 import numpy as np
 import tensorflow as tf
 import json
 
 def build_model(BATCH_SIZE,VOCAB_SIZE,EMBED_SIZE,NUM_SAMPLED):
-    '''
-    Build the model (i.e. computational graph) and return the placeholders (input and output) and the loss 
-    '''
+
     # define the placeholders for input and output
     with tf.name_scope('data'):
         center_node = tf.placeholder(tf.int32, shape=[BATCH_SIZE], name='center_node')
@@ -24,15 +15,6 @@ def build_model(BATCH_SIZE,VOCAB_SIZE,EMBED_SIZE,NUM_SAMPLED):
         negative_samples = (tf.placeholder(tf.int32, shape=[NUM_SAMPLED], name='negative_samples'),
             tf.placeholder(tf.float32, shape=[BATCH_SIZE,1], name='true_expected_count'),
             tf.placeholder(tf.float32, shape=[NUM_SAMPLED], name='sampled_expected_count'))
-
-    #https://github.com/tensorflow/tensorflow/blob/624bcfe409601910951789325f0b97f520c0b1ee/tensorflow/python/ops/nn_impl.py#L943-L946
-    # Sample the negative labels.
-    #   sampled shape: [num_sampled] tensor
-    #   true_expected_count shape = [batch_size, 1] tensor
-    #   sampled_expected_count shape = [num_sampled] tensor
-
-    # Assemble this part of the graph on the CPU. You can change it to GPU if you have GPU
-    # define weights. In word2vec, it's actually the weights that we care about
 
     with tf.name_scope('embedding_matrix'):
         embed_matrix = tf.Variable(tf.random_uniform([VOCAB_SIZE, EMBED_SIZE], -1.0, 1.0), 
@@ -62,20 +44,13 @@ def build_model(BATCH_SIZE,VOCAB_SIZE,EMBED_SIZE,NUM_SAMPLED):
     return center_node,context_node,negative_samples,loss
 
 def traning_op(loss,LEARNING_RATE):
-    '''
-    Return optimizer
-    define one step for SGD
-    '''
+
     #define optimizer
     optimizer = tf.train.GradientDescentOptimizer(LEARNING_RATE).minimize(loss)
     return optimizer
 
 def train(center_node_placeholder,context_node_placeholder,negative_samples_placeholder,loss,dataset,optimizer,NUM_EPOCHS,BATCH_SIZE,NUM_SAMPLED,care_type,LOG_DIRECTORY,LOG_INTERVAL,MAX_KEEP_MODEL):
-    '''
-    tensorflow training loop
-    define SGD trining
-    *epoch index starts from 1! not 0.
-    '''
+
     care_type = True if care_type==1 else False
 
     # For tensorboad  
